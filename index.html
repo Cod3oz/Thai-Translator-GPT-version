@@ -4,14 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <title>English to Thai Translator (GPT)</title>
-  <meta http-equiv="Cache-Control" content="no-store" />
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="manifest" href="manifest.json">
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("service-worker.js").then(() => {
-        console.log("Service worker registered");
-      });
+      navigator.serviceWorker.register("service-worker.js");
     }
   </script>
 </head>
@@ -57,7 +54,6 @@
     </div>
     <div id="error-message" class="hidden text-red-600 mt-4"></div>
   </div>
-
   <script>
     const inputTextarea = document.getElementById('input-text');
     const contextTextarea = document.getElementById('context-text');
@@ -77,7 +73,6 @@
       if (!inputText) { showError("Please enter some text."); return; }
       hideError();
       translationsList.innerHTML = ""; translationsContainer.classList.add("hidden");
-
       try {
         const response = await fetch("/api/translate", {
           method: "POST",
@@ -102,10 +97,8 @@
         showError("Failed to get translations. Check Netlify setup.");
       }
     }
-
     function showError(msg) { errorMessageDiv.textContent = msg; errorMessageDiv.classList.remove("hidden"); }
     function hideError() { errorMessageDiv.classList.add("hidden"); }
-
     translateButton.addEventListener("click", handleTranslate);
   </script>
 </body>
