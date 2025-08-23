@@ -129,7 +129,7 @@ async function handleTranslate(){
       div.innerHTML=`<button class="absolute top-3 right-3 text-xs px-2 py-1 bg-gray-200 rounded hover:bg-gray-300 copy-btn">📋 Copy</button>
         <p class="font-bold text-blue-600 mb-1">${icon}${r.tone}</p>
         <p class="text-2xl mb-1 thai-text">${r.thai}</p>
-        <p class="text-base text-gray-600 mb-1">Pronunciation: ${r.romanization}</p>
+        <p class="text-base text-gray-600 mb-1 pronunciation">Pronunciation: ${r.romanization}</p>
         <p class="text-base text-gray-600 mb-1">English: ${r.english}</p>
         <p class="text-base text-gray-600">Explanation: ${r.explanation}</p>`;
       translationsList.appendChild(div);
@@ -144,6 +144,16 @@ async function handleTranslate(){
           const original=btn.textContent;
           btn.textContent="✅ Copied!";
           setTimeout(()=>btn.textContent=original,1500);
+        });
+      });
+    });
+    document.querySelectorAll(".pronunciation").forEach(p=>{
+      p.addEventListener("click",()=>{
+        const text=p.textContent.replace("Pronunciation: ","");
+        navigator.clipboard.writeText(text).then(()=>{
+          const original=p.textContent;
+          p.textContent="✅ Copied!";
+          setTimeout(()=>p.textContent=original,1500);
         });
       });
     });

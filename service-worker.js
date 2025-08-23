@@ -1,4 +1,4 @@
-const CACHE_NAME="thai-translator-cache-v8.9";
+const CACHE_NAME="thai-translator-cache-v9.0";
 self.addEventListener("install",e=>self.skipWaiting());
 self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.map(k=>k!==CACHE_NAME&&caches.delete(k)))));self.clients.claim();});
 self.addEventListener("fetch",e=>{const req=e.request;const url=new URL(req.url);if(url.pathname.startsWith("/api/"))return;
