@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>English to Thai Translator (GPT)</title>
+  <meta http-equiv="Cache-Control" content="no-store" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="manifest" href="manifest.json">
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("service-worker.js").then(() => {
+        console.log("Service worker registered");
+      });
+    }
+  </script>
+</head>
+<body class="bg-gray-100 p-4 min-h-screen flex items-center justify-center">
+  <div class="w-full max-w-3xl bg-white shadow-xl rounded-2xl p-8">
+    <h1 class="text-3xl font-bold text-center mb-4">English to Thai Translator</h1>
+    <div class="mb-4">
+      <textarea id="input-text" class="w-full p-3 border rounded" rows="3" placeholder="Enter English text"></textarea>
+    </div>
+    <div class="mb-4 flex space-x-2">
+      <select id="context-dropdown" class="p-2 border rounded w-1/3">
+        <option value="">None</option>
+        <option value="business">Business</option>
+        <option value="formal">Formal</option>
+        <option value="casual">Casual</option>
+        <option value="friends">Friends</option>
+        <option value="romantic">Romantic</option>
+      </select>
+      <textarea id="context-text" class="flex-1 p-2 border rounded" rows="2" placeholder="Optional custom context"></textarea>
+    </div>
+    <div class="mb-4">
+      <label for="model">Model:</label>
+      <select id="model" class="p-2 border rounded">
+        <option value="gpt-4o-mini" selected>GPT-4o-mini (fast, cheap)</option>
+        <option value="gpt-4o">GPT-4o (nuanced)</option>
+        <option value="gpt-3.5-turbo">GPT-3.5-turbo (very cheap)</option>
+      </select>
+    </div>
+    <button id="translate-button" class="px-4 py-2 bg-blue-600 text-white rounded">Translate</button>
+    <div id="translations-container" class="mt-6 hidden">
+      <h2 class="text-xl font-bold mb-2">Translations</h2>
+      <div id="translations-list" class="space-y-4"></div>
+      <div class="mt-6 p-4 border-t text-xs text-gray-500">
+        <p><strong>Notes:</strong></p>
+        <ul class="list-disc pl-6">
+          <li>Casual: friendly, everyday language.</li>
+          <li>Polite (Male/Female): respectful, ends with ครับ / ค่ะ.</li>
+          <li>Formal: professional, business, very respectful.</li>
+          <li>Playful: light, joking, informal.</li>
+          <li>Flirtatious: romantic, teasing, affectionate.</li>
+        </ul>
+      </div>
+    </div>
+    <div id="error-message" class="hidden text-red-600 mt-4"></div>
+  </div>
+
+  <script>
+    const inputTextarea = document.getElementById('input-text');
+    const contextTextarea = document.getElementById('context-text');
+    const contextDropdown = document.getElementById('context-dropdown');
+    const translateButton = document.getElementById('translate-button');
+    const translationsContainer = document.getElementById('translations-container');
+    const translationsList = document.getElementById('translations-list');
+    const errorMessageDiv = document.getElementById('error-message');
+    const modelSelect = document.getElementById('model');
+
+    async function handleTranslate() {
+      const inputText = inputTextarea.value.trim();
+      const contextText = contextTextarea.value.trim();
+      const contextDropdownVal = contextDropdown.value.trim();
+      const model = modelSelect.value;
+      const combinedContext = [contextDropdownVal, contextText].filter(Boolean).join(", ");
+      if (!inputText) { showError("Please enter some text."); return; }
+      hideError();
+      translationsList.innerHTML = ""; translationsContainer.classList.add("hidden");
+
+      try {
+        const response = await fetch("/api/translate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: inputText, context: combinedContext, model })
+        });
+        if (!response.ok) throw new Error("Proxy failed");
+        const data = await response.json();
+        if (!Array.isArray(data)) throw new Error("Unexpected response");
+        for (const r of data) {
+          const div = document.createElement("div");
+          div.className = "p-4 border rounded bg-gray-50";
+          div.innerHTML = `<p class="font-bold text-blue-600">${r.tone}</p>
+            <p class="text-lg">${r.thai}</p>
+            <p class="text-sm text-gray-600">Pronunciation: ${r.romanization}</p>
+            <p class="text-sm text-gray-600">Explanation: ${r.explanation}</p>`;
+          translationsList.appendChild(div);
+        }
+        translationsContainer.classList.remove("hidden");
+      } catch (err) {
+        console.error(err);
+        showError("Failed to get translations. Check Netlify setup.");
+      }
+    }
+
+    function showError(msg) { errorMessageDiv.textContent = msg; errorMessageDiv.classList.remove("hidden"); }
+    function hideError() { errorMessageDiv.classList.add("hidden"); }
+
+    translateButton.addEventListener("click", handleTranslate);
+  </script>
+</body>
+</html>
