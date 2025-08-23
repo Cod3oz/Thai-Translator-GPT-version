@@ -1,4 +1,4 @@
-const CACHE_NAME = "thai-translator-cache-v8.2";
+const CACHE_NAME = "thai-translator-cache-v8.4";
 self.addEventListener("install", e => self.skipWaiting());
 self.addEventListener("activate", e => {
   e.waitUntil(caches.keys().then(keys => Promise.all(keys.map(k => k!==CACHE_NAME && caches.delete(k)))));
