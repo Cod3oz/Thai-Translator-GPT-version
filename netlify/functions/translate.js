@@ -51,13 +51,11 @@ Return as a JSON array.`;
       }
     }
 
-    // Ensure english field exists
     parsed = parsed.map(obj => ({
       ...obj,
       english: obj.english || text
     }));
 
-    // Auto-fill gender if missing
     parsed = parsed.map(obj => {
       if (!obj.gender) {
         if (/Male/.test(obj.tone)) obj.gender = "male";
