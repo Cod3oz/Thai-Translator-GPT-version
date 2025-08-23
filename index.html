@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>English to Thai Translator (GPT)</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="manifest" href="manifest.json">
+  <link rel="manifest" href="manifest.json" />
   <script>
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("service-worker.js");
@@ -13,15 +13,19 @@
   </script>
   <style>
     .gender-icon { display:inline-block; width:1.5em; height:1.5em; vertical-align:middle; }
+    @keyframes spin { to { transform: rotate(360deg);} }
+    .spinner { border:2px solid transparent; border-top-color:white; border-radius:50%; width:1em; height:1em; animation: spin 1s linear infinite; display:inline-block; vertical-align:middle; margin-right:0.5em;}
   </style>
 </head>
 <body class="min-h-screen bg-gradient-to-br from-gray-100 to-blue-50 flex items-center justify-center p-6">
-  <div class="w-full max-w-3xl bg-white shadow-2xl rounded-2xl p-8">
+  <div class="w-full max-w-3xl bg-white shadow-2xl rounded-3xl p-8">
     <h1 class="text-4xl font-bold text-center mb-8 text-blue-700">English → Thai Translator</h1>
+
     <div class="mb-6">
       <label class="block mb-2 font-semibold">English Text</label>
       <textarea id="input-text" class="w-full p-4 border rounded-xl focus:ring-2 focus:ring-blue-500" rows="3"></textarea>
     </div>
+
     <div class="mb-6">
       <label class="block mb-2 font-semibold">Context</label>
       <select id="context-dropdown" class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500 mb-2">
@@ -33,6 +37,7 @@
       </select>
       <textarea id="context-text" class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500" rows="2"></textarea>
     </div>
+
     <div class="mb-6">
       <label class="block mb-2 font-semibold">Model</label>
       <select id="model" class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500">
@@ -41,43 +46,48 @@
         <option value="gpt-3.5-turbo">GPT-3.5-turbo</option>
       </select>
     </div>
+
     <div class="mb-8">
-      <label class="block mb-2 font-semibold">Polite Gender</label>
+      <label class="block mb-2 font-semibold">Speaker Gender</label>
       <select id="gender" class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500">
-        <option value="both" selected>Both</option>
-        <option value="male">Male only</option>
-        <option value="female">Female only</option>
+        <option value="male" selected>Male</option>
+        <option value="female">Female</option>
       </select>
     </div>
-    <div class="text-center mb-8">
-      <button id="translate-button" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-lg shadow">Translate</button>
+
+    <div class="text-center mb-8 sticky bottom-0 bg-white p-4">
+      <button id="translate-button" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-lg shadow w-full">Translate</button>
     </div>
+
     <div id="translations-container" class="hidden">
       <h2 class="text-2xl font-bold mb-4 text-gray-800">Translations</h2>
       <div id="translations-list" class="space-y-6"></div>
+
       <div class="mt-10 p-4 border-t text-sm text-gray-600">
         <p class="font-semibold mb-2">Notes:</p>
         <ul class="list-disc pl-6 space-y-1 mb-4">
           <li>Casual: friendly, everyday language.</li>
-          <li>Polite (Male/Female): respectful, ends with ครับ / ค่ะ.</li>
+          <li>Polite: respectful endings (ครับ for male, ค่ะ for female).</li>
           <li>Formal: professional, very respectful.</li>
           <li>Playful: light, joking, informal.</li>
           <li>Flirtatious: romantic, teasing.</li>
         </ul>
         <div class="flex items-center space-x-6">
           <div class="flex items-center space-x-2">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" class="gender-icon"><circle cx="32" cy="32" r="20" fill="#FFE0BD"/><path d="M12 32c0-12 8-24 20-24s20 12 20 24v12H12V32z" fill="#000000"/></svg>
-            <span>Polite (Male)</span>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" class="gender-icon"><circle cx="32" cy="32" r="20" fill="#FFE0BD"/><rect x="22" y="22" width="20" height="20" rx="10" fill="#000000"/></svg>
+            <span>Male</span>
           </div>
           <div class="flex items-center space-x-2">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" class="gender-icon"><circle cx="32" cy="32" r="20" fill="#FFE0BD"/><path d="M12 32c0-12 8-24 20-24s20 12 20 24v12H12V32z" fill="#FFD700"/></svg>
-            <span>Polite (Female)</span>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" class="gender-icon"><circle cx="32" cy="32" r="20" fill="#FFE0BD"/><rect x="22" y="22" width="20" height="20" rx="10" fill="#FFD700"/></svg>
+            <span>Female</span>
           </div>
         </div>
       </div>
     </div>
+
     <div id="error-message" class="hidden text-red-600 mt-4"></div>
   </div>
+
 <script>
 const inputTextarea=document.getElementById('input-text');
 const contextTextarea=document.getElementById('context-text');
@@ -88,8 +98,9 @@ const translationsList=document.getElementById('translations-list');
 const errorMessageDiv=document.getElementById('error-message');
 const modelSelect=document.getElementById('model');
 const genderSelect=document.getElementById('gender');
-const maleSVG=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" class="gender-icon"><circle cx="32" cy="32" r="20" fill="#FFE0BD"/><path d="M12 32c0-12 8-24 20-24s20 12 20 24v12H12V32z" fill="#000000"/></svg>`;
-const femaleSVG=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" class="gender-icon"><circle cx="32" cy="32" r="20" fill="#FFE0BD"/><path d="M12 32c0-12 8-24 20-24s20 12 20 24v12H12V32z" fill="#FFD700"/></svg>`;
+const maleSVG=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" class="gender-icon"><circle cx="32" cy="32" r="20" fill="#FFE0BD"/><rect x="22" y="22" width="20" height="20" rx="10" fill="#000000"/></svg>`;
+const femaleSVG=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" class="gender-icon"><circle cx="32" cy="32" r="20" fill="#FFE0BD"/><rect x="22" y="22" width="20" height="20" rx="10" fill="#FFD700"/></svg>`;
+
 async function handleTranslate(){
   const inputText=inputTextarea.value.trim();
   const contextText=contextTextarea.value.trim();
@@ -99,6 +110,11 @@ async function handleTranslate(){
   const combinedContext=[contextDropdownVal,contextText].filter(Boolean).join(", ");
   if(!inputText){showError("Please enter some text.");return;}
   hideError();translationsList.innerHTML="";translationsContainer.classList.add("hidden");
+
+  // Button loading state
+  translateButton.disabled=true;
+  translateButton.innerHTML='<span class="spinner"></span>Translating...';
+
   try{
     const response=await fetch("/api/translate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text:inputText,context:combinedContext,model,gender})});
     if(!response.ok)throw new Error("Proxy failed");
@@ -109,16 +125,34 @@ async function handleTranslate(){
       if(r.gender==="male")icon=maleSVG+" ";
       if(r.gender==="female")icon=femaleSVG+" ";
       const div=document.createElement("div");
-      div.className="p-6 border rounded-xl bg-gray-50 shadow-sm";
-      div.innerHTML=`<p class="font-bold text-blue-600 mb-1">${icon}${r.tone}</p>
-        <p class="text-xl mb-1">${r.thai}</p>
-        <p class="text-sm text-gray-600 mb-1">Pronunciation: ${r.romanization}</p>
-        <p class="text-sm text-gray-600 mb-1">English: ${r.english}</p>
-        <p class="text-sm text-gray-600">Explanation: ${r.explanation}</p>`;
+      div.className="p-6 border rounded-3xl bg-gray-50 shadow-sm relative";
+      div.innerHTML=`<button class="absolute top-3 right-3 text-xs px-2 py-1 bg-gray-200 rounded hover:bg-gray-300 copy-btn">📋 Copy</button>
+        <p class="font-bold text-blue-600 mb-1">${icon}${r.tone}</p>
+        <p class="text-2xl mb-1 thai-text">${r.thai}</p>
+        <p class="text-base text-gray-600 mb-1">Pronunciation: ${r.romanization}</p>
+        <p class="text-base text-gray-600 mb-1">English: ${r.english}</p>
+        <p class="text-base text-gray-600">Explanation: ${r.explanation}</p>`;
       translationsList.appendChild(div);
     }
     translationsContainer.classList.remove("hidden");
+
+    // Attach copy listeners
+    document.querySelectorAll(".copy-btn").forEach(btn=>{
+      btn.addEventListener("click",()=>{
+        const thai=btn.parentElement.querySelector(".thai-text").textContent;
+        navigator.clipboard.writeText(thai).then(()=>{
+          const original=btn.textContent;
+          btn.textContent="✅ Copied!";
+          setTimeout(()=>btn.textContent=original,1500);
+        });
+      });
+    });
+
   }catch(err){console.error(err);showError("Failed to get translations. Check Netlify setup.");}
+  finally{
+    translateButton.disabled=false;
+    translateButton.textContent="Translate";
+  }
 }
 function showError(msg){errorMessageDiv.textContent=msg;errorMessageDiv.classList.remove("hidden");}
 function hideError(){errorMessageDiv.classList.add("hidden");}
